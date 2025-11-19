@@ -27,7 +27,7 @@ npm run build
 
 **Full workflow** (launch Chrome + inject code):
 ```bash
-npm start
+npm start full
 ```
 
 **Launch Chrome only:**
@@ -68,7 +68,8 @@ lbot/
 ├── index.ts                # Main entry point
 ├── dist-inject.js          # Injected analyzer script (stub)
 ├── test-*.test.ts          # Unit tests
-└── ARCHITECTURE.md         # Full documentation
+├── ARCHITECTURE.md         # Full documentation
+└── package.json            # Dependencies and scripts
 ```
 
 ## Troubleshooting

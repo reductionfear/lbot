@@ -7,11 +7,11 @@ import { getChromePath, checkChromeDebugActive, CHROME_PORT } from './helpers-ch
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const CHROME_LOCK_FILE = join(__dirname, '../.chrome-analyzer-lock');
+const CHROME_LOCK_FILE = join(__dirname, '.chrome-analyzer-lock');
 
 export async function launchChrome(): Promise<void> {
   const chromePath = getChromePath();
-  const userDataDir = join(__dirname, '../.chrome-analyzer-profile');
+  const userDataDir = join(__dirname, '.chrome-analyzer-profile');
 
   if (!existsSync(userDataDir)) {
     mkdirSync(userDataDir, { recursive: true });
