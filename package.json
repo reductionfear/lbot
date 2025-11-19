@@ -1,0 +1,30 @@
+{
+  "name": "lichess-external-mover",
+  "version": "1.0.0",
+  "description": "Node.js/Electron application for automated chess analysis using Chrome DevTools Protocol",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "chess",
+    "lichess",
+    "chess.com",
+    "automation",
+    "electron",
+    "cdp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chrome-remote-interface": "^0.33.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "jest": "^29.7.0",
+    "typescript": "^5.3.0"
+  }
+}
