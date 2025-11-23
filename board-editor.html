@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Board Editor - lbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #312e2b;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .board-container {
+            background: #262421;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 0;
+            border: 2px solid #000;
+            cursor: pointer;
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .square.light {
+            background: #f0d9b5;
+        }
+
+        .square.dark {
+            background: #b58863;
+        }
+
+        .square:hover {
+            opacity: 0.8;
+        }
+
+        .square.selected {
+            box-shadow: inset 0 0 0 3px #3498db;
+        }
+
+        .controls {
+            background: #262421;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 300px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .piece-selector {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .piece-btn {
+            background: #3c3836;
+            border: 2px solid #555;
+            border-radius: 4px;
+            font-size: 32px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .piece-btn:hover {
+            background: #4a4845;
+        }
+
+        .piece-btn.selected {
+            border-color: #3498db;
+            background: #2c5f87;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #3c3836;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #4a4845;
+        }
+
+        button.primary {
+            background: #3498db;
+        }
+
+        button.primary:hover {
+            background: #2980b9;
+        }
+
+        button.danger {
+            background: #e74c3c;
+        }
+
+        button.danger:hover {
+            background: #c0392b;
+        }
+
+        .fen-section {
+            margin-bottom: 20px;
+        }
+
+        textarea, input {
+            width: 100%;
+            background: #3c3836;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-top: 5px;
+        }
+
+        textarea {
+            min-height: 80px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .turn-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .turn-btn {
+            flex: 1;
+            padding: 10px;
+            background: #3c3836;
+            border: 2px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .turn-btn.active {
+            border-color: #3498db;
+            background: #2c5f87;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-container">
+            <h1>Chess Board Editor</h1>
+            <div class="chessboard" id="chessboard"></div>
+        </div>
+
+        <div class="controls">
+            <h2>Piece Selector</h2>
+            <div class="piece-selector">
+                <button class="piece-btn" data-piece="K">♔</button>
+                <button class="piece-btn" data-piece="Q">♕</button>
+                <button class="piece-btn" data-piece="R">♖</button>
+                <button class="piece-btn" data-piece="B">♗</button>
+                <button class="piece-btn" data-piece="N">♘</button>
+                <button class="piece-btn" data-piece="P">♙</button>
+                <button class="piece-btn" data-piece="k">♚</button>
+                <button class="piece-btn" data-piece="q">♛</button>
+                <button class="piece-btn" data-piece="r">♜</button>
+                <button class="piece-btn" data-piece="b">♝</button>
+                <button class="piece-btn" data-piece="n">♞</button>
+                <button class="piece-btn" data-piece="p">♟</button>
+            </div>
+
+            <div class="button-group">
+                <button class="primary" onclick="setStartPosition()">Start Position</button>
+                <button onclick="clearBoard()">Clear Board</button>
+                <button class="danger" onclick="deleteSelected()">Delete Piece</button>
+            </div>
+
+            <h2>Turn</h2>
+            <div class="turn-selector">
+                <button class="turn-btn active" id="whiteBtn" onclick="setTurn('w')">White</button>
+                <button class="turn-btn" id="blackBtn" onclick="setTurn('b')">Black</button>
+            </div>
+
+            <h2>Castling Rights</h2>
+            <div class="options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="castleWK" checked>
+                    <label for="castleWK">White King-side</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="castleWQ" checked>
+                    <label for="castleWQ">White Queen-side</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="castleBK" checked>
+                    <label for="castleBK">Black King-side</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="castleBQ" checked>
+                    <label for="castleBQ">Black Queen-side</label>
+                </div>
+            </div>
+
+            <h2>FEN Position</h2>
+            <div class="fen-section">
+                <label>FEN String (editable - paste or edit here, then click Load FEN)</label>
+                <textarea id="fenOutput"></textarea>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button class="primary" onclick="loadFromFEN()">Load FEN</button>
+                    <button onclick="copyFEN()">Copy FEN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chess piece Unicode mappings
+        const pieceChars = {
+            'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+            'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+        };
+
+        // Board state
+        let board = Array(8).fill().map(() => Array(8).fill(null));
+        let selectedPiece = null;
+        let turn = 'w';
+
+        // Initialize board
+        function initBoard() {
+            const chessboard = document.getElementById('chessboard');
+            chessboard.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    square.onclick = () => handleSquareClick(row, col);
+                    chessboard.appendChild(square);
+                }
+            }
+
+            updateBoard();
+            updateFEN();
+        }
+
+        // Handle square click
+        function handleSquareClick(row, col) {
+            if (selectedPiece) {
+                board[row][col] = selectedPiece;
+            } else {
+                board[row][col] = null;
+            }
+            updateBoard();
+            updateFEN();
+        }
+
+        // Update board display
+        function updateBoard() {
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(square => {
+                const row = parseInt(square.dataset.row);
+                const col = parseInt(square.dataset.col);
+                const piece = board[row][col];
+                square.textContent = piece ? pieceChars[piece] : '';
+            });
+        }
+
+        // Select piece from palette
+        document.querySelectorAll('.piece-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.piece-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedPiece = this.dataset.piece;
+            });
+        });
+
+        // Delete selected piece (right-click mode)
+        function deleteSelected() {
+            selectedPiece = null;
+            document.querySelectorAll('.piece-btn').forEach(b => b.classList.remove('selected'));
+        }
+
+        // Set starting position
+        function setStartPosition() {
+            const startPos = [
+                ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+                ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+                ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+            ];
+            board = startPos;
+            updateBoard();
+            updateFEN();
+        }
+
+        // Clear board
+        function clearBoard() {
+            board = Array(8).fill().map(() => Array(8).fill(null));
+            updateBoard();
+            updateFEN();
+        }
+
+        // Set turn
+        function setTurn(color) {
+            turn = color;
+            document.getElementById('whiteBtn').classList.toggle('active', color === 'w');
+            document.getElementById('blackBtn').classList.toggle('active', color === 'b');
+            updateFEN();
+        }
+
+        // Generate FEN from board
+        function updateFEN() {
+            let fen = '';
+
+            // Board position
+            for (let row = 0; row < 8; row++) {
+                let emptyCount = 0;
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece) {
+                        if (emptyCount > 0) {
+                            fen += emptyCount;
+                            emptyCount = 0;
+                        }
+                        fen += piece;
+                    } else {
+                        emptyCount++;
+                    }
+                }
+                if (emptyCount > 0) {
+                    fen += emptyCount;
+                }
+                if (row < 7) {
+                    fen += '/';
+                }
+            }
+
+            // Turn
+            fen += ' ' + turn;
+
+            // Castling rights
+            let castling = '';
+            if (document.getElementById('castleWK').checked) castling += 'K';
+            if (document.getElementById('castleWQ').checked) castling += 'Q';
+            if (document.getElementById('castleBK').checked) castling += 'k';
+            if (document.getElementById('castleBQ').checked) castling += 'q';
+            fen += ' ' + (castling || '-');
+
+            // En passant (default to -)
+            fen += ' -';
+
+            // Halfmove clock and fullmove number
+            fen += ' 0 1';
+
+            document.getElementById('fenOutput').value = fen;
+        }
+
+        // Load position from FEN
+        function loadFromFEN() {
+            const fenInput = document.getElementById('fenOutput').value;
+            const fen = fenInput.trim();
+            
+            if (!fen || fen === '8/8/8/8/8/8/8/8 w KQkq - 0 1') {
+                showNotification('Please enter a FEN string in the textarea first', true);
+                return;
+            }
+
+            try {
+                const parts = fen.split(' ');
+                const position = parts[0];
+                const rows = position.split('/');
+
+                if (rows.length !== 8) {
+                    throw new Error('Invalid FEN: must have 8 ranks');
+                }
+
+                // Parse board
+                const newBoard = [];
+                for (let row = 0; row < 8; row++) {
+                    const rank = rows[row];
+                    const boardRow = [];
+                    for (let char of rank) {
+                        if (char >= '1' && char <= '8') {
+                            // Empty squares
+                            const count = parseInt(char);
+                            for (let i = 0; i < count; i++) {
+                                boardRow.push(null);
+                            }
+                        } else if (pieceChars[char]) {
+                            // Valid piece
+                            boardRow.push(char);
+                        } else {
+                            throw new Error('Invalid piece character: ' + char);
+                        }
+                    }
+                    if (boardRow.length !== 8) {
+                        throw new Error('Invalid FEN: rank ' + (row + 1) + ' has ' + boardRow.length + ' squares');
+                    }
+                    newBoard.push(boardRow);
+                }
+
+                board = newBoard;
+
+                // Parse turn
+                if (parts[1]) {
+                    setTurn(parts[1] === 'b' ? 'b' : 'w');
+                }
+
+                // Parse castling rights
+                if (parts[2] && parts[2] !== '-') {
+                    document.getElementById('castleWK').checked = parts[2].includes('K');
+                    document.getElementById('castleWQ').checked = parts[2].includes('Q');
+                    document.getElementById('castleBK').checked = parts[2].includes('k');
+                    document.getElementById('castleBQ').checked = parts[2].includes('q');
+                }
+
+                updateBoard();
+                updateFEN();
+                showNotification('FEN loaded successfully!');
+            } catch (e) {
+                showNotification('Error loading FEN: ' + e.message, true);
+            }
+        }
+
+        // Copy FEN to clipboard
+        async function copyFEN() {
+            const fenOutput = document.getElementById('fenOutput');
+            const fenText = fenOutput.value;
+            
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(fenText);
+                    showNotification('FEN copied to clipboard!');
+                } else {
+                    // Fallback for older browsers
+                    fenOutput.select();
+                    document.execCommand('copy');
+                    showNotification('FEN copied to clipboard!');
+                }
+            } catch (err) {
+                showNotification('Failed to copy FEN: ' + err.message, true);
+            }
+        }
+        
+        // Simple notification system
+        function showNotification(message, isError = false) {
+            // Remove any existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${isError ? '#e74c3c' : '#27ae60'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 4px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Update FEN when castling checkboxes change
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', updateFEN);
+        });
+
+        // Initialize
+        initBoard();
+        setStartPosition();
+    </script>
+</body>
+</html>
