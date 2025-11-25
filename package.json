@@ -1,0 +1,17 @@
+{
+  "name": "lichess-external-mover",
+  "version": "1.0.0",
+  "description": "Node.js application that uses Electron to control Chrome via remote debugging for Lichess automation",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "build": "node build.js"
+  },
+  "keywords": ["lichess", "chess", "automation", "chrome", "cdp"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chrome-remote-interface": "^0.33.2"
+  }
+}
